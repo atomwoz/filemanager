@@ -1,0 +1,226 @@
+body {
+    font-family: monospace;
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+}
+
+.navbar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.navbar li {
+    float: left;
+}
+
+.navbar li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: underline;
+    text-transform: uppercase;
+}
+
+.navbar li a:hover {
+    background-color: #111;
+}
+
+@media screen and (max-width: 600px) {
+    .navbar li {
+        float: none;
+    }
+}
+
+
+.container {
+    display: flex;
+}
+
+.side-nav {
+    width: 250px;
+    background-color: grey;
+    height: 100vh;
+    text-align: left;
+    padding-left: 10px;
+    padding-top: 200px;
+}
+
+.main-content {
+    flex-grow: 1;
+    background-color: white;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+}
+
+.a {
+    text-decoration: underline;
+    text-transform: uppercase;
+    color: grey;
+    font-weight: bolder;
+}
+
+.a:hover {
+    color: black;
+}
+
+.a:visited,
+.a:active {
+    color: grey;
+}
+
+td img {
+    width: 32px;
+    height: 32px;
+}
+
+.separator {
+    width: 50px;
+    height: 50px;
+    clear: both;
+}
+
+
+.folders div {
+    margin: 20px;
+    float: left;
+}
+
+.files div {
+    margin: 20px;
+    float: left;
+}
+
+.dirEntry img {
+    padding-left: 15px;
+}
+
+.fileEntry img {
+    padding-left: 15px;
+    width: 48px;
+    height: 50px;
+}
+
+.fileEntry,
+.dirEntry {
+    text-align: center;
+}
+
+.folders,
+.files {
+    margin-left: 15px;
+}
+
+.deleter {
+    color: gray;
+    text-decoration: none;
+    border: 1px solid gray;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-radius: 100px;
+    position: relative;
+    bottom: 40px;
+    left: 10px;
+
+}
+
+.dirEntry .linking {
+    padding: 0;
+    margin: 0;
+    margin-left: 35px;
+}
+
+.fileEntry .p {
+    padding: 0;
+    margin: 0;
+    margin-left: 55px;
+}
+
+.side-nav {
+    text-align: center;
+}
+
+.side-nav button,
+#fileSubmit1 {
+    width: 150px;
+    height: 40px;
+    background-color: lightgray;
+    border: 1px solid black;
+    margin: 10px;
+    border-radius: 90px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-left: 0;
+}
+
+.side-nav button:hover {
+    background-color: white;
+}
+
+.side-nav form {
+    border: 2px solid black;
+    margin-right: 15px;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.lbl-upload {
+    padding: 10px;
+    background-color: darkgrey;
+    color: white;
+    cursor: pointer;
+    border-radius: 90px;
+    width: 80%;
+    margin-top: 25px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#fileSubmit1 {
+    margin-top: 25px;
+}
+
+.side-nav-editor button {
+    text-align: center;
+    width: min-content;
+    padding: 15px;
+    float: left;
+    padding-bottom: 15px;
+    padding-top: 10px;
+}
+
+.editor-window {
+    display: flex;
+    justify-content: stretch;
+    align-self: start;
+}
+
+.line-numberer {
+    padding-top: 4px;
+    width: 30px;
+    height: 100%;
+    font-size: 15px;
+}
+
+textarea {
+    font-size: 15px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    resize: none;
+}
+
+.side-nav-editor {
+    height: 100vh;
+}
