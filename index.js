@@ -38,6 +38,13 @@ const getBase = (req) => {
     return [path.join(__dirname, 'PLIKI', cPath), cPath]
 }
 
+app.post("/style", (req, res) => {
+    fs.writeFileSync(path.join(__dirname, "static", "style.json"), JSON.stringify(req.body))
+    res.send("OK")
+    ORACLE++
+})
+
+
 app.post("/saveFile", (req, res) => {
     let [base, cPath] = getBase(req);
     fs.writeFile(base, req.body.text, (err) => {

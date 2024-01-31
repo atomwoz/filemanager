@@ -1,4 +1,10 @@
 let lastSaveTextHash = 0
+let styleObject = {
+    fontSize: 16,
+    fontFamily: "monospace",
+    mainColor: "#000000",
+    backgroundColor: "#ffffff"
+}
 
 function updateLineNumbers() {
     $(".line-numberer").innerHTML = "";
@@ -7,6 +13,35 @@ function updateLineNumbers() {
         if (line.length > $("#text").cols)
             $(".line-numberer").innerHTML += "⤷<br/>";
     });
+}
+
+function applyStyle() {
+    $("#text").style.fontSize = styleObject.fontSize + "px";
+    $("#text").style.fontFamily = styleObject.fontFamily;
+    $("#text").style.color = styleObject.mainColor;
+    $("#text").style.backgroundColor = styleObject.backgroundColor;
+    $(".line-numberer").style.fontSize = styleObject.fontSize + "px";
+    updateLineNumbers();
+}
+
+function fontBigger() {
+    styleObject.fontSize += 1;
+    applyStyle();
+    writeStyleToServer()
+}
+
+function fontSmaller() {
+    styleObject.fontSize -= 1;
+    applyStyle();
+    writeStyleToServer()
+}
+
+function showSucc() {
+    $(".modal").style.display = "block"
+    setTimeout(() => {
+        $(".modal").style.display = "none"
+    }, 1000);
+
 }
 
 function saveFile() {
@@ -19,10 +54,14 @@ function saveFile() {
         },
         body: JSON.stringify({ text: textValue })
     })
-        .catch(err => {
+        .then(res => res.text()).then(res => {
+            showSucc()
+            lastSaveTextHash = cyrb53($("#text").value)
+            updateSaveButton()
+        }).catch(err => {
             alert("Error in saving file!")
         })
-    lastSaveTextHash = cyrb53($("#text").value)
+
 }
 
 function updateSaveButton() {
@@ -34,6 +73,24 @@ function update() {
     updateSaveButton();
 }
 
+function getStyleFromServer() {
+    fetch("/style.json").then(res => res.json()).then(res => {
+        styleObject = res;
+        applyStyle();
+    })
+}
+
+function writeStyleToServer() {
+    fetch("/style", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(styleObject)
+    })
+}
+
+getStyleFromServer();
 lastSaveTextHash = cyrb53($("#text").value)
 $("#text").addEventListener("input", update);
 
