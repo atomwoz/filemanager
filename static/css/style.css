@@ -224,3 +224,7 @@ textarea {
 .side-nav-editor {
     height: 100vh;
 }
+
+#save {
+    width: 150px;
+}

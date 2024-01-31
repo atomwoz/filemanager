@@ -23,8 +23,9 @@ app.engine('hbs', hbs({
         }
     }
 }));   // domyślny layout, potem można go zmienić
+app.use(express.json()); // Add this line to parse JSON data in the request body
 app.set('view engine', 'hbs');                           // określenie nazwy silnika szablonów
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: true }))
 
 let ORACLE = 0
 
@@ -36,6 +37,18 @@ const getBase = (req) => {
         cPath = decodeURIComponent(req.query.p)
     return [path.join(__dirname, 'PLIKI', cPath), cPath]
 }
+
+app.post("/saveFile", (req, res) => {
+    let [base, cPath] = getBase(req);
+    fs.writeFile(base, req.body.text, (err) => {
+        if (err) {
+            res.send("Error in saving file !")
+            return
+        }
+        res.send("File saved !")
+    })
+    ORACLE++
+})
 
 app.get("/createFolder", (req, res) => {
     let [base, cPath] = getBase(req);
