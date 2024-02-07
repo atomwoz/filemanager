@@ -128,7 +128,7 @@ td img {
     border-radius: 100px;
     position: relative;
     bottom: 40px;
-    left: 10px;
+    left: 25px;
 
 }
 
@@ -234,6 +234,12 @@ textarea:focus {
 
 #save {
     width: 150px;
+}
+
+.changeName {
+    clear: both;
+    bottom: 15px;
+    left: -5px;
 }
 
 .modal {

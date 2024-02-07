@@ -38,6 +38,13 @@
         </form>
 
     </dialog>
+    <dialog id="renameFile">
+        <form method="dialog">
+            <label for="filefileNameRename">New name:</label>
+            <input type="text" id="filefileNameRename" name="fileName">
+            <button id="submitFileFileRename">Rename</button>
+        </form>
+    </dialog>
     <div class="container">
         {{{body}}}
     </div>
@@ -65,7 +72,6 @@
             const url = "/createFolder?name=" + folderName + "&p=" + encodeURIComponent(window.location.href.split("=")[1]);
             window.location = url;
         });
-
         document.getElementById("submitFile").addEventListener("click", function () {
             const fileName = encodeURIComponent(document.getElementById("fileName").value);
             const url = "/createFile?name=" + fileName + "&p=" + encodeURIComponent(window.location.href.split("=")[1]);
@@ -75,6 +81,12 @@
         document.getElementById("submitFileRename").addEventListener("click", function () {
             const fileNameRename = encodeURIComponent(document.getElementById("fileNameRename").value);
             const url = "/rename?name=" + fileNameRename + "&p=" + encodeURIComponent(window.location.href.split("=")[1]);
+            window.location = url;
+        });
+        let oldName = ""
+        document.getElementById("submitFileFileRename").addEventListener("click", function () {
+            const fileNameRename = encodeURIComponent(document.getElementById("filefileNameRename").value);
+            const url = "/renameFile?fileName=" + fileNameRename + "&p=" + encodeURIComponent(oldName) + "";
             window.location = url;
         });
 
@@ -93,6 +105,13 @@
 
         function rename() {
             let dialog = document.getElementById("rename");
+            if (!locked_modals)
+                dialog.showModal();
+        }
+
+        function renameFile(x) {
+            let dialog = document.getElementById("renameFile");
+            oldName = x
             if (!locked_modals)
                 dialog.showModal();
         }

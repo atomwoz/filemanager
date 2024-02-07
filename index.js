@@ -110,6 +110,24 @@ app.get("/delete", (req, res) => {
     ORACLE++
 })
 
+app.get("/renameFile", (req, res) => {
+    let [base, cPath] = getBase(req);
+    const basePath = path.dirname(cPath)
+    let newName = req.query.fileName
+    let newPath = path.join(path.dirname(base), newName)
+    fs.rename(base, newPath, (err) => {
+        if (err) {
+            res.send("Error in renaming !");
+            return
+        }
+        cPath = cPath.split("/").slice(0, -1)
+        cPath = cPath + "/" + newName
+        res.redirect("/?p=" + basePath)
+    })
+    ORACLE++
+})
+
+
 app.get("/deleteFolder", (req, res) => {
     let [base, cPath] = getBase(req);
     fs.rmdir(base, (err) => {
