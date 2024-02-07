@@ -3,8 +3,44 @@ let styleObject = {
     fontSize: 16,
     fontFamily: "monospace",
     mainColor: "#000000",
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
+    secondColor: "#eeeeee"
 }
+
+let themeId = 0
+const themes = [
+    {
+        name: "Light",
+        mainColor: "#000000",
+        backgroundColor: "#ffffff",
+        secondColor: "#eeeeee"
+    },
+    {
+        name: "Dark",
+        mainColor: "#ffffff",
+        backgroundColor: "#000000",
+        secondColor: "#333333"
+    },
+    {
+        name: "VSBlue",
+        mainColor: "#FFFFFF",
+        backgroundColor: "#1e1e1e",
+        secondColor: "#333333"
+    },
+    {
+        name: "vsgirl",
+        mainColor: "#010101",
+        backgroundColor: "#ffdb72",
+        secondColor: "#ffb2bb"
+    },
+    {
+        name: "grun",
+        mainColor: "#3aa18e",
+        backgroundColor: "#337476",
+        secondColor: "#4f7ea3"
+    }
+];
+
 
 function updateLineNumbers() {
     $(".line-numberer").innerHTML = "";
@@ -21,7 +57,18 @@ function applyStyle() {
     $("#text").style.color = styleObject.mainColor;
     $("#text").style.backgroundColor = styleObject.backgroundColor;
     $(".line-numberer").style.fontSize = styleObject.fontSize + "px";
+    $(".line-numberer").style.color = styleObject.mainColor;
+    $(".line-numberer").style.backgroundColor = styleObject.secondColor;
     updateLineNumbers();
+}
+
+function theme() {
+    themeId = (themeId + 1) % themes.length
+    styleObject.mainColor = themes[themeId].mainColor
+    styleObject.backgroundColor = themes[themeId].backgroundColor
+    styleObject.secondColor = themes[themeId].secondColor
+    applyStyle()
+    writeStyleToServer()
 }
 
 function fontBigger() {
