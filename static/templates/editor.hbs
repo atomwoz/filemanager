@@ -1,0 +1,17 @@
+<div class="side-nav side-nav-editor">
+    <button onclick="fontSmaller()">-a</button>
+    <button onclick="theme()">THEME</button>
+    <button onclick="fontBigger()">+A</button>
+    <button id="save" onclick="saveFile()" disabled>SAVE FILE</button>
+</div>
+<div class="main-content editor-window">
+    <div class="modal">File was saved</div>
+
+    <div class="line-numberer">
+        1 <br> 2 <br> 3 <br> 4 <br> 5 <br> 6 <br> 7 <br> 8 <br> 9 <br> 10
+    </div>
+    <div class="vh"></div>
+    <textarea name="text" id="text" cols="200" rows="50">{{content}}</textarea>
+</div>
+<script defer src="uposledzonejq.js"></script>
+<script defer src="editor.js"></script>

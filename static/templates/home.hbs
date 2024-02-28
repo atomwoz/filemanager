@@ -1,0 +1,51 @@
+<div class="side-nav">
+    <button onclick="newFolder()">Create new folder</button>
+    <button onclick="newFile()">Create new file</button>
+    <button onclick="rename()">Rename folder</button>
+    <form action="/upload?p={{path}}" method="post" enctype="multipart/form-data">
+        <label class="lbl-upload" for="fileToUpload">CHOOSE FILE</label>
+        <input type="file" name="fileToUpload" id="fileToUpload" multiple>
+        <input type="submit" value="Upload File" id="fileSubmit1" name="submit">
+    </form>
+</div>
+<div class="main-content">
+    <a href="/">HOME</a>
+    {{#each currentPath}}
+    -&gt; <a href="/?p={{path}}">{{name}}</a>
+    {{/each}}
+    <div class="separator"></div>
+    <div class="folders">
+        {{#each folders}}
+        <div class="dirEntry">
+            <a class="deleter" href="/deleteFolder?p={{path}}"
+                onclick="return confirm('Are you sure you want to delete this folder?')">X</a>
+            <img src="/ico/folder.png" alt="Folder icon"> <br>
+            <a class="a" href="/?p={{path}}" class="linking">{{name}}</a>
+        </div>
+        {{/each}}
+    </div>
+    <div class="separator"></div>
+    <div class="files">
+        {{#each gfxFiles}}
+        <div class="fileEntry">
+            <a class="deleter" href="/delete?p={{path}}"
+                onclick="return confirm('Are you sure you want to delete this file?')">X</a>
+
+            <button class="deleter changeName" onclick="renameFile('{{path}}')">✎</button>
+            <img src="{{blend name}}" alt="File icon"> <br>
+            <a href="/image?p={{path}}" class="p">{{name}}</p>
+        </div>
+        {{/each}}
+        {{#each files}}
+        <div class="fileEntry">
+            <a class="deleter" href="/delete?p={{path}}"
+                onclick="return confirm('Are you sure you want to delete this file?')">X</a>
+
+            <button class="deleter changeName" onclick="renameFile('{{path}}')">✎</button>
+            <img src="{{blend name}}" alt="File icon"> <br>
+            <a href="/editor?p={{path}}" class="p">{{name}}</p>
+        </div>
+        {{/each}}
+    </div>
+
+</div>

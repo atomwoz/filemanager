@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filemanager Woźniak</title>
+    <link rel="stylesheet" href="css\style.css">
+</head>
+
+<body>
+    <ul class="navbar">
+        <li><a href="/">FILEMANAGER</a></li>
+    </ul>
+    <dialog id="newFolder">
+        <form method="dialog">
+            <label for="folderName">Folder name:</label>
+            <input type="text" id="folderName" name="folderName">
+            <button id="submitFolder">Create</button>
+            <button onclick="document.getElementById('newFolder').close()">Close</button>
+        </form>
+    </dialog>
+    <dialog id="newFile">
+        <form method="dialog">
+            <label for="fileName">File name:</label>
+            <input type="text" id="fileName" name="fileName">
+            <button id="submitFile">Create</button>
+            <button onclick="document.getElementById('newFile').close()">Close</button>
+        </form>
+
+    </dialog>
+    <dialog id="rename">
+        <form method="dialog">
+            <label for="fileNameRename">New name:</label>
+            <input type="text" id="fileNameRename" name="fileName">
+            <button id="submitFileRename">Rename</button>
+        </form>
+
+    </dialog>
+    <dialog id="renameFile">
+        <form method="dialog">
+            <label for="filefileNameRename">New name:</label>
+            <input type="text" id="filefileNameRename" name="fileName">
+            <button id="submitFileFileRename">Rename</button>
+        </form>
+    </dialog>
+    <div class="container">
+        {{{body}}}
+    </div>
+    <script>
+
+        let my_oracle = -1;
+        let locked_modals = false
+
+        /*function oracle(inital = false) {
+            fetch("/oracle").then(response => response.json()).then(data => {
+                if (inital) {
+                    my_oracle = data.oracle;
+                } else
+                    if (data.oracle != my_oracle && checkAnyModalOpened()) {
+                        locked_modals = true;
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 100);
+                    }
+            });
+        }*/
+
+        document.getElementById("submitFolder").addEventListener("click", function () {
+            const folderName = encodeURIComponent(document.getElementById("folderName").value);
+            const url = "/createFolder?name=" + folderName + "&p=" + encodeURIComponent(window.location.href.split("=")[1]);
+            window.location = url;
+        });
+        document.getElementById("submitFile").addEventListener("click", function () {
+            const fileName = encodeURIComponent(document.getElementById("fileName").value);
+            const url = "/createFile?name=" + fileName + "&p=" + encodeURIComponent(window.location.href.split("=")[1]);
+            window.location = url;
+        });
+
+        document.getElementById("submitFileRename").addEventListener("click", function () {
+            const fileNameRename = encodeURIComponent(document.getElementById("fileNameRename").value);
+            const url = "/rename?name=" + fileNameRename + "&p=" + encodeURIComponent(window.location.href.split("=")[1]);
+            window.location = url;
+        });
+        let oldName = ""
+        document.getElementById("submitFileFileRename").addEventListener("click", function () {
+            const fileNameRename = encodeURIComponent(document.getElementById("filefileNameRename").value);
+            const url = "/renameFile?fileName=" + fileNameRename + "&p=" + encodeURIComponent(oldName) + "";
+            window.location = url;
+        });
+
+        function newFolder() {
+            let dialog = document.getElementById("newFolder");
+            if (!locked_modals)
+                dialog.showModal();
+
+        }
+
+        function newFile() {
+            let dialog = document.getElementById("newFile");
+            if (!locked_modals)
+                dialog.showModal();
+        }
+
+        function rename() {
+            let dialog = document.getElementById("rename");
+            if (!locked_modals)
+                dialog.showModal();
+        }
+
+        function renameFile(x) {
+            let dialog = document.getElementById("renameFile");
+            oldName = x
+            if (!locked_modals)
+                dialog.showModal();
+        }
+
+        function checkAnyModalOpened() {
+            let dialog = document.getElementById("newFolder");
+            if (dialog.open) {
+                return true;
+            }
+            dialog = document.getElementById("newFile");
+            if (dialog.open) {
+                return true;
+            }
+            dialog = document.getElementById("rename");
+            if (dialog.open) {
+                return true;
+            }
+            return false;
+        }
+        //oracle(true)
+        //setInterval(oracle, 100);
+
+    </script>
+</body>
+
+</html>
