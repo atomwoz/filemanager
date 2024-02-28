@@ -242,6 +242,13 @@ textarea:focus {
     left: -5px;
 }
 
+.fileEntry:first-child {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+
 .modal {
     background-color: #66d13c;
     color: #003101;
