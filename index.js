@@ -3,10 +3,12 @@ const hbs = require("express-handlebars")
 const path = require("path")
 const formidable = require("formidable");
 const fs = require("fs");
+const filters = require('node-image-filter');
 const app = express();
 
 app.use(express.static('static'))
 app.use(express.static('PLIKI'))
+app.use(express.static('TEMPS'))
 app.set('views', path.join(__dirname, 'templates'));        // ustalamy katalog views
 app.engine('hbs', hbs({
     defaultLayout: 'main.hbs',
@@ -28,6 +30,19 @@ app.set('view engine', 'hbs');                           // określenie nazwy si
 app.use(express.urlencoded({ extended: true }))
 
 let ORACLE = 0
+
+const effects = [
+    { name: "grayscale" },
+    { name: "invert" },
+    { name: "sepia" },
+    { name: "blur" },
+    { name: "brightness" },
+    { name: "contrast" },
+    { name: "hue-rotate" },
+    { name: "saturate" },
+    { name: "opacity" },
+    { name: "drop-shadow" }
+]
 
 const getBase = (req) => {
     let cPath = ""
@@ -69,6 +84,17 @@ app.get("/createFolder", (req, res) => {
     });
     ORACLE++
 });
+
+app.all("/preview", (req, res) => {
+    let filter = req.body.filter || req.query.filter
+    let imgPath = req.body.imgPath || req.query.imgPath
+    filters.render(path.join(__dirname, "PLIKI/", imgPath), filters.preset[filter], function (result) {
+        const name = `result.${result.type}` + Math.random().toString(36).substring(7) + "." + result.type
+        result.data.pipe(fs.createWriteStream("TEMPS/" + name));
+        // save local
+        res.send(name);
+    })
+})
 
 app.get("/createFile", (req, res) => {
     let [base, cPath] = getBase(req);
@@ -194,8 +220,14 @@ app.get("/editor", (req, res) => {
     res.render("editor", { content, path: cPath })
 })
 
+app.get("/image", (req, res) => {
+    let [base, cPath] = getBase(req);
+    res.render("image", { path: cPath, effects })
+})
+
 app.get("/", (req, res) => {
     let filesToShow = []
+    let gfxFiles = []
     let folders = []
     let [base, cPath] = getBase(req);
     if (!fs.existsSync(base)) {
@@ -211,13 +243,20 @@ app.get("/", (req, res) => {
             if (fs.lstatSync(path.join(base, file)).isDirectory()) {
                 folders.push({ name: file, path: path.join(cPath, file).replace(/\\/g, "/") })
             } else {
-                filesToShow.push({ name: file, path: path.join(cPath, file).replace(/\\/g, "/") })
+                if (file.endsWith(".jpg") || file.endsWith(".png") || file.endsWith(".gif") || file.endsWith(".jpeg")) {
+                    gfxFiles.push({ name: file, path: path.join(cPath, file).replace(/\\/g, "/") })
+                }
+                else {
+                    filesToShow.push({ name: file, path: path.join(cPath, file).replace(/\\/g, "/") })
+                }
+
+
             }
         })
         let currentPath = cPath.split("/").map((e, i, arr) => {
             return { name: e, path: arr.slice(0, i + 1).join("/") }
         })
-        res.render("home", { files: filesToShow, folders, currentPath, path: cPath })
+        res.render("home", { files: filesToShow, gfxFiles, folders, currentPath, path: cPath })
     });
 })
 
