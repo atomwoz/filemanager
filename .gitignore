@@ -6,4 +6,8 @@ npm-debug.log
 .nyc
 .env
 .DS_Store
-PLIKI
+PLIKI/
+PLIKI/**
+node_modules/.package-lock.json
+TEMPS/**
+**/desktop.ini

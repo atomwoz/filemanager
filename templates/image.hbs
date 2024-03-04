@@ -1,0 +1,122 @@
+<style>
+    #panel {
+        width: 0px;
+        background-color: gray;
+        height: 100vh;
+        transition: width 0.5s;
+        overflow: hidden;
+        text-align: right;
+        padding: 0px;
+    }
+
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+        margin-left: 50px;
+    }
+
+    .image img {
+        max-width: 700px;
+        max-height: 700px;
+    }
+
+    .buttons {
+        margin: 50px;
+
+    }
+
+    .filters {
+        width: 100%;
+        text-align: center;
+        margin-top: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filters div {
+        height: 100px;
+        width: 100px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 20px;
+        cursor: pointer;
+    }
+</style>
+<script>
+    let currentFilter = "";
+    function closePanel() {
+        document.getElementById("panel").style.width = "0px";
+        document.getElementById("panel").style.padding = "0px";
+    }
+    function openPanel() {
+        document.getElementById("panel").style.width = "250px";
+        document.getElementById("panel").style.padding = "15px";
+    }
+    function setFilter(filter) {
+        document.querySelector(".modified-image").style.filter = `${filter}(70%)`;
+        currentFilter = filter;
+    }
+    function resetFilter() {
+        document.querySelector(".modified-image").style.filter = "none";
+        currentFilter = "";
+    }
+    function setTempFilter(filter) {
+        document.querySelector(".modified-image").style.filter = `${filter}(70%)`;
+    }
+    function clearTempFilter() {
+        if (currentFilter === "") {
+            document.querySelector(".modified-image").style.filter = "none";
+        } else {
+            document.querySelector(".modified-image").style.filter = `${currentFilter}(70%)`;
+        }
+    }
+    function preview() {
+        fetch("/preview", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                imgPath: "{{path}}",
+                filter: currentFilter
+            })
+        }).then(response => response.text())
+            .then(data => {
+                alert(data)
+                document.querySelector(".modified-image").src = data;
+            });
+    }
+</script>
+<div><button onclick="openPanel()">Open</button></div>
+<div id="panel">
+    <button onclick="closePanel()">X</button>
+    <div class="filters">
+        <div style="background-image:url('{{path}}');" onclick="resetFilter()">
+            Original
+        </div>
+        {{#each effects}}
+        <div style="background-image:url('{{../path}}');filter:{{name}}(70%)" onclick="setFilter('{{name}}')"
+            onmouseenter="setTempFilter('{{name}}')" onmouseleave="clearTempFilter()">
+            {{name}}
+        </div>
+        {{/each}}
+    </div>
+</div>
+<main>
+    <div class="image">
+        <img src="{{path}}" alt="Image">
+    </div>
+    <div class="buttons">
+        <button onclick="preview()">Podgląd pliku</button>
+        <button>Zmiana nazwy pliku</button>
+        <button>Zapisz zmiany</button>
+    </div>
+    <div class="image">
+        <img class="modified-image" src="{{path}}" alt="Image">
+    </div>
+</main>
