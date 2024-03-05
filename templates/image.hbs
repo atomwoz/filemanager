@@ -1,4 +1,10 @@
 <style>
+    body {
+        margin: 0px;
+        padding: 0px;
+        font-family: Arial, sans-serif;
+        background-color: #222;
+    }
     #panel {
         width: 0px;
         background-color: gray;
@@ -9,6 +15,20 @@
         padding: 0px;
     }
 
+    button
+    {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+
     main {
         display: flex;
         justify-content: center;
@@ -16,6 +36,7 @@
         height: 100vh;
         text-align: center;
         margin-left: 50px;
+        
     }
 
     .image img {
@@ -46,36 +67,70 @@
         margin-top: 20px;
         cursor: pointer;
     }
+    .x-button
+    {
+        background-color: #f44336;
+        color: white;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        top: 0;
+        right: 0;
+        padding: 10px;
+    
+    }
+    .filters-btn
+    {
+        width: 100px;
+        transition: width 0.5s;
+        transition: padding 0.5s;
+        overflow: hidden;
+        padding: 15px;
+    }
 </style>
+<script defer src="uposledzonejq.js"></script>
 <script>
     let currentFilter = "";
+    let currentFilterValue = "";
     function closePanel() {
-        document.getElementById("panel").style.width = "0px";
-        document.getElementById("panel").style.padding = "0px";
+        $("#panel").style.width = "0px";
+        $("#panel").style.padding = "0px";
+        $(".filters-btn").style.width = "100px";
+        $(".filters-btn").style.padding = "15px";
     }
     function openPanel() {
-        document.getElementById("panel").style.width = "250px";
-        document.getElementById("panel").style.padding = "15px";
+        $("#panel").style.width = "250px";
+        $("#panel").style.padding = "15px";
+        $(".filters-btn").style.width = "0px";
+        $(".filters-btn").style.padding = "0px";
     }
-    function setFilter(filter) {
-        document.querySelector(".modified-image").style.filter = `${filter}(70%)`;
+    function setFilter(filter, val) {
+        document.querySelector(".modified-image").style.filter = `${filter}(${val})`;
         currentFilter = filter;
+        currentFilterValue = val;
     }
     function resetFilter() {
         document.querySelector(".modified-image").style.filter = "none";
         currentFilter = "";
+        currentFilterValue = "";
     }
-    function setTempFilter(filter) {
-        document.querySelector(".modified-image").style.filter = `${filter}(70%)`;
+    function setTempFilter(filter, val) {
+        document.querySelector(".modified-image").style.filter = `${filter}(${val})`;
     }
     function clearTempFilter() {
         if (currentFilter === "") {
             document.querySelector(".modified-image").style.filter = "none";
         } else {
-            document.querySelector(".modified-image").style.filter = `${currentFilter}(70%)`;
+            document.querySelector(".modified-image").style.filter = `${currentFilter}(${currentFilterValue})`;
         }
     }
     function preview() {
+        if(currentFilter === "") {
+            alert("Nie wybrano filtra");
+            return;
+        }
+        showProcessing();
         fetch("/preview", {
             method: "POST",
             headers: {
@@ -83,25 +138,76 @@
             },
             body: JSON.stringify({
                 imgPath: "{{path}}",
-                filter: currentFilter
+                filter: currentFilter,
+                value: currentFilterValue
             })
         }).then(response => response.text())
             .then(data => {
-                alert(data)
-                document.querySelector(".modified-image").src = data;
+                window.open(data, "_blank");
+                hideProcessing();
             });
     }
+    function renameImage() {
+        let newName = prompt("Podaj nową nazwę pliku (nie zapomnij o rozszerzeniu)");
+        if (newName !== null) {
+            fetch("/renameFile?p={{path}}&fileName="+newName).then(response => response.text())
+                .then(data => {
+                    showSucc();
+                    setTimeout(() => {
+                        location.href = "/image?p="+newName;
+                    }, 500);
+                });
+        }
+    }
+    function save() {
+        if(currentFilter === "") {
+            alert("Nie wybrano filtra");
+            return;
+        }
+        fetch("/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                imgPath: "{{path}}",
+                filter: currentFilter,
+                value: currentFilterValue
+            })
+        }).then(response => response.text())
+            .then(data => {
+                showSucc();
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            });
+    }
+    function showSucc() {
+        $(".modal").style.display = "block"
+        setTimeout(() => {
+            $(".modal").style.display = "none"
+        }, 1000);
+    
+    }
+    function showProcessing() {
+        $(".yellow").style.display = "block"
+    }
+    function hideProcessing() {
+        $(".yellow").style.display = "none"
+    }
 </script>
-<div><button onclick="openPanel()">Open</button></div>
+<div class="modal">File was saved</div>
+<div class="modal yellow">Processing ... </div>
+<div><button onclick="openPanel()" class="filters-btn">Filtry</button></div>
 <div id="panel">
-    <button onclick="closePanel()">X</button>
+    <button onclick="closePanel()" class="x-button">X</button>
     <div class="filters">
         <div style="background-image:url('{{path}}');" onclick="resetFilter()">
             Original
         </div>
         {{#each effects}}
-        <div style="background-image:url('{{../path}}');filter:{{name}}(70%)" onclick="setFilter('{{name}}')"
-            onmouseenter="setTempFilter('{{name}}')" onmouseleave="clearTempFilter()">
+        <div style="background-image:url('{{../path}}');filter:{{name}}({{value}})" onclick="setFilter('{{name}}', '{{value}}')"
+            onmouseenter="setTempFilter('{{name}}', '{{value}}')" onmouseleave="clearTempFilter()">
             {{name}}
         </div>
         {{/each}}
@@ -113,10 +219,11 @@
     </div>
     <div class="buttons">
         <button onclick="preview()">Podgląd pliku</button>
-        <button>Zmiana nazwy pliku</button>
-        <button>Zapisz zmiany</button>
+        <button onclick="renameImage()">Zmiana nazwy pliku</button>
+        <button onclick="save()" >Zapisz zmiany</button>
     </div>
     <div class="image">
         <img class="modified-image" src="{{path}}" alt="Image">
     </div>
+    <div class="modal">File was saved</div>
 </main>
