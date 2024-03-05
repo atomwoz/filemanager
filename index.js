@@ -32,16 +32,12 @@ app.use(express.urlencoded({ extended: true }))
 let ORACLE = 0
 
 const effects = [
-    { name: "grayscale" },
-    { name: "invert" },
-    { name: "sepia" },
-    { name: "blur" },
-    { name: "brightness" },
-    { name: "contrast" },
-    { name: "hue-rotate" },
-    { name: "saturate" },
-    { name: "opacity" },
-    { name: "drop-shadow" }
+    { name: "grayscale", value: "70%" },
+    { name: "invert", value: "70%" },
+    { name: "sepia", value: "70%" },
+    { name: "blur", value: "5px" },
+    { name: "brightness", value: "70%" },
+    { name: "sharpen", value: "70%" }
 ]
 
 const getBase = (req) => {
@@ -87,10 +83,24 @@ app.get("/createFolder", (req, res) => {
 
 app.all("/preview", (req, res) => {
     let filter = req.body.filter || req.query.filter
+    let value = req.body.value || req.query.value
     let imgPath = req.body.imgPath || req.query.imgPath
     filters.render(path.join(__dirname, "PLIKI/", imgPath), filters.preset[filter], function (result) {
         const name = `result.${result.type}` + Math.random().toString(36).substring(7) + "." + result.type
         result.data.pipe(fs.createWriteStream("TEMPS/" + name));
+        // save local
+        res.send(name);
+    })
+})
+
+app.post("/save", (req, res) => {
+    //Save filtered image on same path
+    let filter = req.body.filter || req.query.filter
+    let value = req.body.value || req.query.value
+    let imgPath = req.body.imgPath || req.query.imgPath
+    filters.render(path.join(__dirname, "PLIKI/", imgPath), filters.preset[filter], function (result) {
+        const name = `result.${result.type}` + Math.random().toString(36).substring(7) + "." + result.type
+        result.data.pipe(fs.createWriteStream(path.join(__dirname, "PLIKI/", imgPath)));
         // save local
         res.send(name);
     })

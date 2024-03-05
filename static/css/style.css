@@ -270,6 +270,10 @@ textarea:focus {
     display: none;
 }
 
+.yellow {
+    background-color: bisque;
+}
+
 @keyframes modalAnimation {
     0% {
         opacity: 0;
