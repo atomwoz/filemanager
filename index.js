@@ -4,8 +4,12 @@ const path = require("path")
 const formidable = require("formidable");
 const fs = require("fs");
 const filters = require('node-image-filter');
+const cookieparser = require("cookie-parser");
+const nocache = require("nocache");
 const app = express();
 
+app.use(nocache())
+app.use(cookieparser())
 app.use(express.static('static'))
 app.use(express.static('PLIKI'))
 app.use(express.static('TEMPS'))
@@ -30,6 +34,65 @@ app.set('view engine', 'hbs');                           // określenie nazwy si
 app.use(express.urlencoded({ extended: true }))
 
 let ORACLE = 0
+const USER_EXPIRATION = 900000
+
+class User {
+    constructor(username, password) {
+        this.username = username
+        this.password = password
+    }
+    setSessionID(sessionID) {
+        this.sessionID = sessionID
+        this.expires = Date.now() + USER_EXPIRATION
+    }
+    getSessionID() {
+        if (this.expires < Date.now()) {
+            this.sessionID = undefined
+        }
+        return this.sessionID
+    }
+    isLoggedIn() {
+        return this.getSessionID() != undefined
+    }
+
+}
+
+function uuid() {
+    const uid = () => Math.random().toString(36).substring(7);
+    return uid() + uid() + uid() + uid();
+}
+
+let userDatabase = {
+    users: [new User("admin", "admin")],
+    addNewUser: function (username, password) {
+        let newUser = new User(username, password)
+        this.users.push(newUser)
+    },
+    userExists: function (username) {
+        return this.users.some(user => user.username === username)
+    },
+    login: function (username, password) {
+        let user = this.users.find(user => user.username === username)
+        if (user && user.password === password) {
+            let sessionID = uuid()
+            do {
+                sessionID = uuid()
+            } while (this.users.some(user => user.getSessionID() === sessionID))
+            user.setSessionID(sessionID)
+            return sessionID
+        }
+        return undefined
+    },
+    logout: function (username) {
+        let user = this.users.find(user => user.username === username)
+        user.setSessionID(undefined)
+    },
+    userFromSessionID: function (sessionID) {
+        return this.users.find(user => user.getSessionID() === sessionID)
+    }
+}
+
+
 
 const effects = [
     { name: "grayscale", value: "70%" },
@@ -49,7 +112,27 @@ const getBase = (req) => {
     return [path.join(__dirname, 'PLIKI', cPath), cPath]
 }
 
+function authorize(req, res = null) {
+    if (req.cookies && req.cookies.sessionID) {
+        let user = userDatabase.userFromSessionID(req.cookies.sessionID)
+        if (!user) {
+            if (res)
+                res.clearCookie("sessionID")
+            return false
+        }
+        return user
+    }
+    else {
+        return false
+    }
+}
+
+
 app.post("/style", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     fs.writeFileSync(path.join(__dirname, "static", "style.json"), JSON.stringify(req.body))
     res.send("OK")
     ORACLE++
@@ -57,6 +140,10 @@ app.post("/style", (req, res) => {
 
 
 app.post("/saveFile", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     fs.writeFile(base, req.body.text, (err) => {
         if (err) {
@@ -69,6 +156,10 @@ app.post("/saveFile", (req, res) => {
 })
 
 app.get("/createFolder", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     let folderName = decodeURIComponent(req.query.name);
     fs.mkdir(path.join(base, folderName), (err) => {
@@ -82,6 +173,10 @@ app.get("/createFolder", (req, res) => {
 });
 
 app.all("/preview", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let filter = req.body.filter || req.query.filter
     let value = req.body.value || req.query.value
     let imgPath = req.body.imgPath || req.query.imgPath
@@ -94,6 +189,10 @@ app.all("/preview", (req, res) => {
 })
 
 app.post("/save", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     //Save filtered image on same path
     let filter = req.body.filter || req.query.filter
     let value = req.body.value || req.query.value
@@ -107,6 +206,10 @@ app.post("/save", (req, res) => {
 })
 
 app.get("/createFile", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     let fileName = decodeURIComponent(req.query.name)
     let extensions = fs.readdirSync(path.join(__dirname, 'file-templates'))
@@ -135,6 +238,10 @@ app.get("/createFile", (req, res) => {
 })
 
 app.get("/delete", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     fs.unlink(base, (err) => {
         if (err) {
@@ -147,6 +254,10 @@ app.get("/delete", (req, res) => {
 })
 
 app.get("/renameFile", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     const basePath = path.dirname(cPath)
     let newName = req.query.fileName
@@ -165,6 +276,10 @@ app.get("/renameFile", (req, res) => {
 
 
 app.get("/deleteFolder", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     fs.rmdir(base, (err) => {
         if (err) {
@@ -177,6 +292,10 @@ app.get("/deleteFolder", (req, res) => {
 })
 
 app.post("/upload", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let form = formidable({ multiples: true });
     form.parse(req, function (err, fields, files) {
         let [base, cPath] = getBase(req);
@@ -200,6 +319,10 @@ app.post("/upload", (req, res) => {
 })
 
 app.get("/rename", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     if (cPath == "") {
         res.send("Nie można zmienić nazwy głównego folderu")
@@ -221,21 +344,88 @@ app.get("/rename", (req, res) => {
 })
 
 app.get("/oracle", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     res.send(ORACLE.toString())
 })
 
 app.get("/editor", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     let content = fs.readFileSync(base, "utf8")
     res.render("editor", { content, path: cPath })
 })
 
 app.get("/image", (req, res) => {
+    if (!authorize(req)) {
+        res.redirect("/login")
+        return
+    }
     let [base, cPath] = getBase(req);
     res.render("image", { path: cPath, effects })
 })
 
+app.get("/login", (req, res) => {
+    res.render("login")
+})
+
+app.post("/login", (req, res) => {
+    let username = req.body.username
+    let password = req.body.password
+    console.log(username, password)
+    if (userDatabase.login(username, password)) {
+        res.cookie("sessionID", userDatabase.login(username, password), { maxAge: USER_EXPIRATION, httpOnly: true })
+        console.log("Logged in")
+        res.redirect("/")
+    }
+    else {
+        res.render("login", { error: "Invalid username or password" })
+        console.log("Invalid username or password")
+    }
+})
+app.get("/logout", (req, res) => {
+    let u = authorize(req)
+    if (!u) {
+        res.redirect("/login")
+        return
+    }
+    console.log("Logged out, " + u.username)
+    userDatabase.logout(u.username)
+    res.clearCookie("sessionID")
+    res.redirect("/login")
+})
+
+app.get("/register", (req, res) => {
+    res.render("register")
+})
+
+app.post("/register", (req, res) => {
+    let username = req.body.username
+    let password = req.body.password
+    let password2 = req.body.password2
+    if (password !== password2) {
+        res.render("register", { error: "Passwords do not match" })
+        return
+    }
+    if (userDatabase.userExists(username)) {
+        res.render("register", { error: "User already exists" })
+    }
+    else {
+        userDatabase.addNewUser(username, password)
+        res.redirect("/login")
+    }
+})
+
 app.get("/", (req, res) => {
+    if (!authorize(req, res)) {
+        res.redirect("/login")
+        return
+    }
     let filesToShow = []
     let gfxFiles = []
     let folders = []
@@ -266,7 +456,7 @@ app.get("/", (req, res) => {
         let currentPath = cPath.split("/").map((e, i, arr) => {
             return { name: e, path: arr.slice(0, i + 1).join("/") }
         })
-        res.render("home", { files: filesToShow, gfxFiles, folders, currentPath, path: cPath })
+        res.render("home", { files: filesToShow, gfxFiles, folders, currentPath, path: cPath, user: authorize(req).username })
     });
 })
 

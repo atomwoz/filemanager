@@ -1,0 +1,47 @@
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  input {
+    margin: 10px 0;
+    width: 250px;
+    height: 25px;
+    font-size: 20px;
+  }
+
+  button {
+    margin: 10px 0;
+    padding: 10px 20px;
+    border: none;
+    background-color: gray;
+    cursor: pointer;
+  }
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  
+  }
+</style>
+
+<div>
+<h1>Login to File Manager</h1>
+<form action="/login" method="POST">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username" required>
+
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" required>
+
+  <button type="submit">Login</button> <br/><br>
+  <span style="color: red;">{{error}}</span>
+  <a>Don't have an account? <a href="/register">Register</a></a>
+</form>
+</div>
